@@ -4,19 +4,12 @@ from django.db import connection
 
 
 def table_exists(table_name):
-    """Check if a table exists in the DB before querying it."""
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_name = %s
-            )
-        """, [table_name])
-        return cursor.fetchone()[0]
+    """Check if a table exists in the DB using Django introspection."""
+    return table_name in connection.introspection.table_names()
 
 
 def shutdown_function():
-    # Ensure Django is fully loaded and table exists before querying
+    # Ensure Django is fully loaded and apps are ready
     if not django.apps.apps.ready:
         return
 
